@@ -71,6 +71,46 @@ object App {
       })
       return 100.0/x
    }
+   
+   /*def euclidean_distance(movieA: Movie, movieB: Movie): Double ={
+      var sum_squared_distance = 0
+      val funcs = List(getCastDifference _, getGenreDifferenceScore _)
+      for(fun <- funcs){
+         sum_squared_distance += math.pow(fun(movieA, movieB), 2)
+      }
+      return math.sqrt(sum_squared_distance)
+   }*/
+   
+   /*
+    def kNearestNeighbours(inputMovie : Movie, numRequested : Int): Unit ={
+      val conf = new SparkConf().setAppName("MovieRatingsPredictor").setMaster("local[4]")
+      val sc = new SparkContext(conf);
+      val credits = sc.textFile("./src/data2/tmdb_5000_credits_tab.txt").map(f => {f.split("\t")})
+        .map(f => (f(0), (f(1), f(2), f(3))))// (movie_id, title, cast, crew)
+      //budget,genres,homepage,id,keywords,original_language,original_title,overview,popularity,production_companies,production_countries,release_date,revenue,runtime,spoken_languages,status,tagline,title,vote_average,vote_count
+      val movies = sc.textFile("./src/data2/tmdb_5000_movies_tab.txt").map(f => {f.split("\t")})//.foreach(f => println(f.size))
+        .map(f => (f(0), (f(1), f(2), f(3), f(4), f(5), f(6))))// (movie_id, budget, genres, keywords, production_companies, popularity, vote_average)
+      val dataset = credits.join(movies)
+        .map({case (id, ((title, cast, crew), (budget, genres, keywords, productC, popularity, voteAverage)))
+        => Movie(id, title, cast : String, crew : String, budget.toInt, genres, keywords, productC, popularity.toDouble, voteAverage.toDouble)}).persist()
+      val test = dataset.map(movie => (movie, euclidean_distance(movie, inputMovie)))
+      test.sortBy(movie => movie._2).take(numRequested)
+   }
+   */
+   
+   /*
+   def getGenreDifferenceScore(movieA: Movie, movieB : Movie): Double = {
+      var x = 0
+      for (a <- getCast(movieA.genres)) {
+         for (b <- getCast(movieB.genres)) {
+            if (a.contains(b) || b.contains(a)) {
+               x += 100 / Math.min(movieA.cast.size, movieB.cast.size)
+            }
+         }
+      }
+      return 100.0 / x
+   }
+   */
 
 
 
