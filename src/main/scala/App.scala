@@ -88,7 +88,11 @@ object App {
 
    def euclidean_distance(movieA: Movie, movieB: Movie): Double ={
       var sum_squared_distance = 0.0
-      val funcs = List(getCastDifference _, getGenreDifferenceScore _, getBudgetDifference _)
+      val funcs = List(
+         getCastDifference _,
+         getGenreDifferenceScore _,
+         getBudgetDifference _,
+         getProductionCompaniesDifference _)
       for(fun <- funcs){
          sum_squared_distance += math.pow(fun(movieA, movieB), 2)
       }
@@ -107,6 +111,32 @@ object App {
       return 100.0/x
    }
 
+   def getProductionCompaniesDifference(movieA: Movie, movieB: Movie): Double = {
+      // Minimum list size = maximum similar elements - vary from 0 to ~5
+      // Relative similarity = Number of similar elements / Minimum list size - [0, 1]
+      // Relative similarity (including extras) = Number of similar elements / Max list size - [0, 1]
+      //    This is for situations like movies with prod comps: (A, B, C), (A, B, C), (A)
+      //       By having this similarity as a factor, (A, B, C) is more similar to (A, B, C) than (A)
+      // Results:
+      //    0 - 30: very similar, either all matching or some with low options
+      //    50 - 70: some matching with at least one having many options
+      //    ~100: No matches
+      val minSize = Math.min(movieA.productionCompanies.size, movieB.productionCompanies.size)
+      val maxSize = Math.max(movieA.productionCompanies.size, movieB.productionCompanies.size)
+      var numSimilar = 0
+      for (a <- movieA.productionCompanies) {
+         if (movieB.productionCompanies.contains(a)) {
+            numSimilar += 1
+         }
+      }
+      val similar = (numSimilar * 1.0) / Math.max(minSize, 1)
+      val similarWithExtras = (numSimilar * 1.0) / Math.max(maxSize, 1)
+      val diffScore = 100 - ( ( (similar * 0.7) + (similarWithExtras * 0.3) ) * 100.0 )
+      // 100 - (100 * (0.7 * proportion of small list similar + 0.3 * proportion of large list similar))
+      // constants represent the proportion of similarity we want to include
+
+      return diffScore
+   }
 
 
 
