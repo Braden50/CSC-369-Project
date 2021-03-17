@@ -110,7 +110,14 @@ object App {
    }
 
    def getBudgetDifference(movieA : Movie, movieB: Movie): Double = {
-      Math.abs(movieA.budget - movieB.budget)
+      // help from: https://stats.stackexchange.com/questions/281162/scale-a-number-between-a-range
+      // NOTE: 1/5 of the data has a budget of 0, inaccurate, not actually 0
+      val r_min = 0
+      val r_max = 80000000  // max budget in dataset, hardcoded
+      val t_min = 0
+      val t_max = 1
+      val budget_diff = Math.abs(movieA.budget - movieB.budget)
+      ( (budget_diff - r_min) / (r_max - r_min) ) * ( t_max - t_min ) + t_min
    }
 
    def euclidean_distance(movieA: Movie, movieB: Movie): Double ={
