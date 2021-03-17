@@ -181,6 +181,26 @@ object App {
       }
       return 100 - (((totalSimilar - numSimilar) / Math.max(minSize + maxSize / 2.0, 1)) * 100)
    }
+   
+   
+      /*
+     Computes the cosine distance similarity between two non-zero vectors. Formula can
+     be used to approximate the similarity of two given list of strings.
+     difference is 1 - similarity.
+    */
+   def getKeywordDifferenceCosine(movieA: Movie, movieB : Movie) : Double = {
+      val movieAkeys = movieB.keyWords.map(keyA => (keyA, 1)).groupBy(x => x._1).mapValues(x => x.map(x => x._2)).mapValues(x => x.sum)
+      val movieBkeys = movieB.keyWords.map(keyB => (keyB, 1)).groupBy(x => x._1).mapValues(x => x.map(x => x._2)).mapValues(x => x.sum)
+      val intersection = movieA.keyWords.filter(keyA => movieB.keyWords.contains(keyA))
+      var numerator = intersection.map(str => (movieAkeys(str) * movieBkeys(str))).sum
+      val s1 = movieAkeys.map({case (key, count) => Math.pow(count, 2)}).sum
+      val s2 = movieBkeys.map({case (key, count) => Math.pow(count, 2)}).sum
+      val denominator = math.sqrt(s1) * math.sqrt(s2)
+      if(denominator == 0){
+         return 0.0
+      }
+      100 - ((numerator).toDouble/denominator * 100)
+   }
 
 
 
