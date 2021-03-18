@@ -93,7 +93,7 @@ object App {
                   GENRE_WEIGHT = 1 / genre
                   for (keyword <- 1 to 5) {
                      KEYWORD_WEIGHT = 1 / keyword
-                     for (prod <- 1 to 10) {
+                     for (prod <- 1 to 5) {
                         PRODUCTION_COMP_WEIGHT = 1 / prod
                         // do it all
                         println("--------------------------------")
