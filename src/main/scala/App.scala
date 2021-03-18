@@ -84,17 +84,17 @@ object App {
       val weightLogger = new BufferedWriter(new FileWriter(new File("weights.txt")))
 
       for (cast <- 1 to 3) {
-         CAST_WEIGHT = 1 / cast
+         CAST_WEIGHT = 1.0 / cast
          for (crew <- 1 to 3) {
-            CREW_WEIGHT = 1 / crew
+            CREW_WEIGHT = 1.0 / crew
             for (budget <- 1 to 3) {
-               BUDGET_WEIGHT = 1 / budget
+               BUDGET_WEIGHT = 1.0 / budget
                for (genre <- 1 to 3) {
-                  GENRE_WEIGHT = 1 / genre
+                  GENRE_WEIGHT = 1.0 / genre
                   for (keyword <- 1 to 3) {
-                     KEYWORD_WEIGHT = 1 / keyword
+                     KEYWORD_WEIGHT = 1.0 / keyword
                      for (prod <- 1 to 3) {
-                        PRODUCTION_COMP_WEIGHT = 1 / prod
+                        PRODUCTION_COMP_WEIGHT = 1.0 / prod
                         // do it all
                         println("--------------------------------")
                         printWeights()
