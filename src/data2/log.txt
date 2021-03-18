@@ -1,0 +1,39 @@
+Phaniraj Aenugula, Keerat Grewal, Braden Michelson, Harmeen Singh
+
+As Group:
+Initial pair programming/researching (~5 hr)
+
+Keerat Grewal:
+I helped filter the data so that it was more readable (~1 hr)
+I helped in the development of the keyword difference and budget difference functions for the KNN algorithm (~1 hr)
+Did research to properly scale the budget difference
+Refined genre difference to be more accurate
+Helped with slides/report (~3 hr)
+Helped debug code issues with RDDs (~ 1 hr)
+
+Phaniraj Aengula:
+Helped with planning, gathering data, and set up for data and coding(3hrs)
+Programming the main data file and json parsing to setup the huge RDD of movies(2hr)
+Created some interface movie class to help with containerizing and passing data(20min)
+Wrote initial testing setup using sample of the dataset(30min)
+Wrote input testing using a new movie and allowed users to input their own attributes(30min)
+Finishing touches to the program to make it more complete(30min)
+Testing and running the model many times under different weights and k-values(1.5hr)
+
+Harmeen Singh:
+Helped with slides/report (~ 3hrs)
+Helped with determining approach for getCastDifference/getCrewDifference and for finding ways to scale the getBudget difference to certain range (~ 45 min)
+Wrote a function to compute eucledian_distance and test it. (25 min)
+Wrote GenreDifference. (20 min)
+Did research on potential ways to find similarity between two given strings and list of strings. Potential methods :  levenshtein distance, fuzzy score, cosine similarity, intersection/union. (1 hr)
+Wrote a different approach to the initial getKeyWordDifference that relied on computing differences by first looking at the cosine similarity. (35 mins)
+Modified testing code and executed it on 10 different models on random 80%,20% train, test splits (~ 1 hr, 45 mins)
+
+Braden Michelson:
+Researched possible ML methods / Talked with Stanchev about possible ideas and methods (~45 min)
+wrote and tested getProductionCompaniesDifference (~45 min)
+fixed getBudgetDifference (~15 min)
+Added to report and slides (~ 2.5 hours)
+Updated and executed testing (~ 3.5 hours )
+Mainly inactive while running
+Finalizing slides and report ( ~ 3 hours )
