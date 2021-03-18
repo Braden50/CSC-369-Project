@@ -13,6 +13,13 @@ object App {
    case class Movie(id: String, title: String, cast:List[String], crew: List[String], budget: Int,
                     genres: List[String], keyWords: List[String], productionCompanies: List[String], popularity: Double, voteAverage: Double)
 
+   var CAST_WEIGHT = 1.0
+   var CREW_WEIGHT = 1.0
+   var BUDGET_WEIGHT = 1.0
+   var GENRE_WEIGHT = 1.0
+   var KEYWORD_WEIGHT = 1.0
+   var PRODUCTION_COMP_WEIGHT = 1.0
+
    def main(args: Array[String]): Unit = {
 
       val conf = new SparkConf().setAppName("MovieRatingsPredictor").setMaster("local[4]")
@@ -53,7 +60,7 @@ object App {
       */
 
       println("Running Trials Now")
-      for (i <- 1 to 4) {
+      for (i <- 1 to 10) {
          println(f"Running trial $i...")
          val test = dataset.sample(withReplacement = false, .2)
          dataset = dataset.subtract(test) // took out collect for test
@@ -128,7 +135,7 @@ object App {
             x += 100.0/Math.max(Math.min(movieA.cast.size, movieB.cast.size), 1)
          }
       })
-      return 100.0/x
+      return ( 100.0/x ) * CAST_WEIGHT
    }
 
    def getCrewDifference(movieA: Movie, movieB: Movie): Double = {
@@ -142,7 +149,7 @@ object App {
             x += 100.0/Math.max(Math.min(movieA.crew.size, movieB.crew.size), 1)
          }
       })
-      return 100.0/x
+      return ( 100.0/x ) * CREW_WEIGHT
    }
 
    def getBudgetDifference(movieA : Movie, movieB: Movie): Double = {
@@ -153,7 +160,7 @@ object App {
       val t_min = 0
       val t_max = 1
       val budget_diff = Math.abs(movieA.budget - movieB.budget)
-      ( (budget_diff - r_min) / (r_max - r_min) ) * ( t_max - t_min ) + t_min
+      ( ( (budget_diff - r_min) / (r_max - r_min) ) * ( t_max - t_min ) + t_min ) * BUDGET_WEIGHT
    }
 
    def euclidean_distance(movieA: Movie, movieB: Movie): Double ={
@@ -181,7 +188,7 @@ object App {
             }
          }
       }
-      return 100.0/x
+      return ( 100.0/x ) * GENRE_WEIGHT
    }
 
    def getProductionCompaniesDifference(movieA: Movie, movieB: Movie): Double = {
@@ -208,7 +215,7 @@ object App {
       // 100 - (100 * (0.7 * proportion of small list similar + 0.3 * proportion of large list similar))
       // constants represent the proportion of similarity we want to include
 
-      return diffScore
+      return diffScore * PRODUCTION_COMP_WEIGHT
    }
 
    def getKeywordDifference(movieA: Movie, movieB: Movie): Double ={
@@ -222,7 +229,7 @@ object App {
             numSimilar += 1
          }
       }
-      return 100 - (((totalSimilar - numSimilar) / Math.max(minSize + maxSize / 2.0, 1)) * 100)
+      return ( 100 - (((totalSimilar - numSimilar) / Math.max(minSize + maxSize / 2.0, 1)) * 100) ) * KEYWORD_WEIGHT
    }
    
    
