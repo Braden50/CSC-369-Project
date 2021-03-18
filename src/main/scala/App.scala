@@ -1,3 +1,5 @@
+import java.io._
+
 import org.apache.avro.reflect.Union
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark
@@ -12,6 +14,13 @@ object App {
 
    case class Movie(id: String, title: String, cast:List[String], crew: List[String], budget: Int,
                     genres: List[String], keyWords: List[String], productionCompanies: List[String], popularity: Double, voteAverage: Double)
+
+   var CAST_WEIGHT = 1.0
+   var CREW_WEIGHT = 1.0
+   var BUDGET_WEIGHT = 1.0
+   var GENRE_WEIGHT = 1.0
+   var KEYWORD_WEIGHT = 1.0
+   var PRODUCTION_COMP_WEIGHT = 1.0
 
    def main(args: Array[String]): Unit = {
 
@@ -52,25 +61,101 @@ object App {
       }
       */
 
-      println("Running Trials Now")
-      for (i <- 1 to 4) {
-         println(f"Running trial $i...")
-         val test = dataset.sample(withReplacement = false, .2)
-         dataset = dataset.subtract(test) // took out collect for test
-         val result = test.collect()
-           .filter(x => x.voteAverage != 0.0) // good
-           .map(x => (x.title, x.voteAverage, KNN(x, dataset, n)))
-           .map({ case (title, real, (pred, movies)) => (title, real, movies, pred, Math.abs(real - pred)) })
-         //         result.foreach({case (movie, real, movies, pred, diff) =>
-         //            println(f"Movie: $movie%-60s, Real: $real, Pred: $pred%2.2f, SE: $diff%2.2f")
-         //            println(movies)})        // to print out all movie results from testing sample
-         val differences = result.map({ case (movie, real, movies, pred, diff) => diff })
-         val avgDiff = differences.sum / differences.length
-         val medianDiff = differences.sorted.drop(differences.length / 2).head
-         println(f"trial $i results:")
-         println(f"\t average score difference: $avgDiff")
-         println(f"\t median score difference: $medianDiff")
+//      println("Running Trials Now")
+//      for (i <- 1 to 10) {
+//         println(f"Running trial $i...")
+//         val test = dataset.sample(withReplacement = false, .2)
+//         dataset = dataset.subtract(test) // took out collect for test
+//         val result = test.collect()
+//           .filter(x => x.voteAverage != 0.0) // good
+//           .map(x => (x.title, x.voteAverage, KNN(x, dataset, n)))
+//           .map({ case (title, real, (pred, movies)) => (title, real, movies, pred, Math.abs(real - pred)) })
+//         //         result.foreach({case (movie, real, movies, pred, diff) =>
+//         //            println(f"Movie: $movie%-60s, Real: $real, Pred: $pred%2.2f, SE: $diff%2.2f")
+//         //            println(movies)})        // to print out all movie results from testing sample
+//         val differences = result.map({ case (movie, real, movies, pred, diff) => diff })
+//         val avgDiff = differences.sum / differences.length
+//         val medianDiff = differences.sorted.drop(differences.length / 2).head
+//         println(f"trial $i results:")
+//         println(f"\t average score difference: $avgDiff")
+//         println(f"\t median score difference: $medianDiff")
+//      }
+
+      val weightLogger = new BufferedWriter(new FileWriter(new File("weights.txt")))
+
+      for (cast <- 1 to 5) {
+         CAST_WEIGHT = 1 / cast
+         for (crew <- 1 to 5) {
+            CREW_WEIGHT = 1 / crew
+            for (budget <- 1 to 5) {
+               BUDGET_WEIGHT = 1 / budget
+               for (genre <- 1 to 5) {
+                  GENRE_WEIGHT = 1 / genre
+                  for (keyword <- 1 to 5) {
+                     KEYWORD_WEIGHT = 1 / keyword
+                     for (prod <- 1 to 10) {
+                        PRODUCTION_COMP_WEIGHT = 1 / prod
+                        // do it all
+                        println("--------------------------------")
+                        printWeights()
+                        var averagesForTrials: List[Double] = List()      // will sum median with mean in results
+                        var mediansForTrials: List[Double] = List()
+                        for (i <- 1 to 5) {
+                           println(f"Running trial $i...")
+                           val test = dataset.sample(withReplacement = false, .2) // might wanna change prop here for speed
+                           dataset = dataset.subtract(test) // took out collect for test
+                           val result = test.collect()
+                             .filter(x => x.voteAverage != 0.0) // good
+                             .map(x => (x.title, x.voteAverage, KNN(x, dataset, n)))
+                             .map({ case (title, real, (pred, movies)) => (title, real, movies, pred, Math.abs(real - pred)) })
+                           //         result.foreach({case (movie, real, movies, pred, diff) =>
+                           //            println(f"Movie: $movie%-60s, Real: $real, Pred: $pred%2.2f, SE: $diff%2.2f")
+                           //            println(movies)})        // to print out all movie results from testing sample
+                           val differences = result.map({ case (movie, real, movies, pred, diff) => diff })
+                           val avgDiff = differences.sum / differences.length
+                           val medianDiff = differences.sorted.drop(differences.length / 2).head
+                           averagesForTrials = averagesForTrials:::List(avgDiff)
+                           mediansForTrials = mediansForTrials:::List(medianDiff)
+
+                           println(f"trial $i results:")
+                           println(f"\t average score difference: $avgDiff")
+                           println(f"\t median score difference: $medianDiff")
+                        }
+                        val avgMean = averagesForTrials.sum / averagesForTrials.length
+                        val avgMedian = mediansForTrials.sum / mediansForTrials.length
+                        weightLogger.write(CAST_WEIGHT + "," + CREW_WEIGHT + "," + BUDGET_WEIGHT + "," +
+                          GENRE_WEIGHT + "," + KEYWORD_WEIGHT + "," + PRODUCTION_COMP_WEIGHT + "," +
+                          avgMean + "," + avgMedian)
+                        println(CAST_WEIGHT + "," + CREW_WEIGHT + "," + BUDGET_WEIGHT + "," +
+                          GENRE_WEIGHT + "," + KEYWORD_WEIGHT + "," + PRODUCTION_COMP_WEIGHT + "," +
+                          avgMean + "," + avgMedian)
+                     }
+                  }
+               }
+            }
+         }
       }
+      weightLogger.close()
+
+//      println("Running Trials Now")
+//      for (i <- 1 to 10) {
+//         println(f"Running trial $i...")
+//         val test = dataset.sample(withReplacement = false, .2)
+//         dataset = dataset.subtract(test) // took out collect for test
+//         val result = test.collect()
+//           .filter(x => x.voteAverage != 0.0) // good
+//           .map(x => (x.title, x.voteAverage, KNN(x, dataset, n)))
+//           .map({ case (title, real, (pred, movies)) => (title, real, movies, pred, Math.abs(real - pred)) })
+//         //         result.foreach({case (movie, real, movies, pred, diff) =>
+//         //            println(f"Movie: $movie%-60s, Real: $real, Pred: $pred%2.2f, SE: $diff%2.2f")
+//         //            println(movies)})        // to print out all movie results from testing sample
+//         val differences = result.map({ case (movie, real, movies, pred, diff) => diff })
+//         val avgDiff = differences.sum / differences.length
+//         val medianDiff = differences.sorted.drop(differences.length / 2).head
+//         println(f"trial $i results:")
+//         println(f"\t average score difference: $avgDiff")
+//         println(f"\t median score difference: $medianDiff")
+//      }
 
 //      println("Running Trials Now")
 //      for (i <- 1 to 4) {
@@ -115,8 +200,6 @@ object App {
       return ret.take(20)
    }
 
-
-
    def getCastDifference(movieA: Movie, movieB: Movie): Double = {
       var x = 1.0
 
@@ -128,7 +211,7 @@ object App {
             x += 100.0/Math.max(Math.min(movieA.cast.size, movieB.cast.size), 1)
          }
       })
-      return 100.0/x
+      return ( 100.0/x ) * CAST_WEIGHT
    }
 
    def getCrewDifference(movieA: Movie, movieB: Movie): Double = {
@@ -142,7 +225,7 @@ object App {
             x += 100.0/Math.max(Math.min(movieA.crew.size, movieB.crew.size), 1)
          }
       })
-      return 100.0/x
+      return ( 100.0/x ) * CREW_WEIGHT
    }
 
    def getBudgetDifference(movieA : Movie, movieB: Movie): Double = {
@@ -153,7 +236,7 @@ object App {
       val t_min = 0
       val t_max = 1
       val budget_diff = Math.abs(movieA.budget - movieB.budget)
-      ( (budget_diff - r_min) / (r_max - r_min) ) * ( t_max - t_min ) + t_min
+      ( ( (budget_diff - r_min) / (r_max - r_min) ) * ( t_max - t_min ) + t_min ) * BUDGET_WEIGHT
    }
 
    def euclidean_distance(movieA: Movie, movieB: Movie): Double ={
@@ -181,7 +264,7 @@ object App {
             }
          }
       }
-      return 100.0/x
+      return ( 100.0/x ) * GENRE_WEIGHT
    }
 
    def getProductionCompaniesDifference(movieA: Movie, movieB: Movie): Double = {
@@ -208,7 +291,7 @@ object App {
       // 100 - (100 * (0.7 * proportion of small list similar + 0.3 * proportion of large list similar))
       // constants represent the proportion of similarity we want to include
 
-      return diffScore
+      return PRODUCTION_COMP_WEIGHT * diffScore
    }
 
    def getKeywordDifference(movieA: Movie, movieB: Movie): Double ={
@@ -222,7 +305,7 @@ object App {
             numSimilar += 1
          }
       }
-      return 100 - (((totalSimilar - numSimilar) / Math.max(minSize + maxSize / 2.0, 1)) * 100)
+      return  ( 100 - (((totalSimilar - numSimilar) / Math.max(minSize + maxSize / 2.0, 1)) * 100) ) * KEYWORD_WEIGHT
    }
    
    
@@ -243,6 +326,15 @@ object App {
          return 0.0
       }
       100 - ((numerator).toDouble/denominator * 100)
+   }
+
+   def printWeights(): Unit = {
+      println("CAST_WEIGHT = " + CAST_WEIGHT)
+      println("CREW_WEIGHT = " + CREW_WEIGHT)
+      println("BUDGET_WEIGHT = " + BUDGET_WEIGHT)
+      println("GENRE_WEIGHT = " + GENRE_WEIGHT)
+      println("KEYWORD_WEIGHT = " + KEYWORD_WEIGHT)
+      println("PRODUCTION_COMP_WEIGHT = " + PRODUCTION_COMP_WEIGHT)
    }
 
 
