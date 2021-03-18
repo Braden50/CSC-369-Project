@@ -83,24 +83,24 @@ object App {
 
       val weightLogger = new BufferedWriter(new FileWriter(new File("weights.txt")))
 
-      for (cast <- 1 to 5) {
+      for (cast <- 1 to 3) {
          CAST_WEIGHT = 1 / cast
-         for (crew <- 1 to 5) {
+         for (crew <- 1 to 3) {
             CREW_WEIGHT = 1 / crew
-            for (budget <- 1 to 5) {
+            for (budget <- 1 to 3) {
                BUDGET_WEIGHT = 1 / budget
-               for (genre <- 1 to 5) {
+               for (genre <- 1 to 3) {
                   GENRE_WEIGHT = 1 / genre
-                  for (keyword <- 1 to 5) {
+                  for (keyword <- 1 to 3) {
                      KEYWORD_WEIGHT = 1 / keyword
-                     for (prod <- 1 to 5) {
+                     for (prod <- 1 to 3) {
                         PRODUCTION_COMP_WEIGHT = 1 / prod
                         // do it all
                         println("--------------------------------")
                         printWeights()
                         var averagesForTrials: List[Double] = List()      // will sum median with mean in results
                         var mediansForTrials: List[Double] = List()
-                        for (i <- 1 to 5) {
+                        for (i <- 1 to 3) {
                            println(f"Running trial $i...")
                            val test = dataset.sample(withReplacement = false, .2) // might wanna change prop here for speed
                            dataset = dataset.subtract(test) // took out collect for test
