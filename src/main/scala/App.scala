@@ -51,23 +51,42 @@ object App {
          println("Difference from expected on average is : " + (sum/count))
       }
       */
-      
-      
+
       println("Running Trials Now")
       for (i <- 1 to 4) {
          println(f"Running trial $i...")
-         val test = dataset.filter(t => t.title.trim() == "Avatar").collect().toList
-         dataset = dataset.filter(x => !test.contains(x))
-         val result = test
-           .filter(x => x.voteAverage != 0.0)
+         val test = dataset.sample(withReplacement = false, .2)
+         dataset = dataset.subtract(test) // took out collect for test
+         val result = test.collect()
+           .filter(x => x.voteAverage != 0.0) // good
            .map(x => (x.title, x.voteAverage, KNN(x, dataset, n)))
-           .map({case (title, real, (pred, movies)) => (title, real, movies, pred, Math.pow((real - pred), 2))})
-         result.foreach({case (movie, real, movies, pred, diff) =>
-            println(f"Movie: $movie%-60s, Real: $real, Pred: $pred%2.2f, SE: $diff%2.2f")
-            println(movies)})
-         val diffs = result.map({case (movie, real, movies, pred, diff) => diff}).toList
-         println("MSE: ", (diffs.sum / diffs.size))
+           .map({ case (title, real, (pred, movies)) => (title, real, movies, pred, Math.abs(real - pred)) })
+         //         result.foreach({case (movie, real, movies, pred, diff) =>
+         //            println(f"Movie: $movie%-60s, Real: $real, Pred: $pred%2.2f, SE: $diff%2.2f")
+         //            println(movies)})        // to print out all movie results from testing sample
+         val differences = result.map({ case (movie, real, movies, pred, diff) => diff })
+         val avgDiff = differences.sum / differences.length
+         val medianDiff = differences.sorted.drop(differences.length / 2).head
+         println(f"trial $i results:")
+         println(f"\t average score difference: $avgDiff")
+         println(f"\t median score difference: $medianDiff")
       }
+
+//      println("Running Trials Now")
+//      for (i <- 1 to 4) {
+//         println(f"Running trial $i...")
+//         val test = dataset.filter(t => t.title.trim() == "Avatar").collect().toList
+//         dataset = dataset.filter(x => !test.contains(x))
+//         val result = test
+//           .filter(x => x.voteAverage != 0.0)
+//           .map(x => (x.title, x.voteAverage, KNN(x, dataset, n)))
+//           .map({case (title, real, (pred, movies)) => (title, real, movies, pred, Math.pow((real - pred), 2))})
+//         result.foreach({case (movie, real, movies, pred, diff) =>
+//            println(f"Movie: $movie%-60s, Real: $real, Pred: $pred%2.2f, SE: $diff%2.2f")
+//            println(movies)})
+//         val diffs = result.map({case (movie, real, movies, pred, diff) => diff}).toList
+//         println("MSE: ", (diffs.sum / diffs.size))
+//      }
    }
 
    def KNN(inputMovie: Movie, data: RDD[Movie], n: Int): (Double, List[String]) = {
