@@ -81,20 +81,22 @@ object App {
 //         println(f"\t median score difference: $medianDiff")
 //      }
 
-      val weightLogger = new BufferedWriter(new FileWriter(new File("weights.txt")))
-
-      for (cast <- 1 to 3) {
-         CAST_WEIGHT = 1.0 / cast
-         for (crew <- 1 to 3) {
-            CREW_WEIGHT = 1.0 / crew
-            for (budget <- 1 to 3) {
-               BUDGET_WEIGHT = 1.0 / budget
-               for (genre <- 1 to 3) {
-                  GENRE_WEIGHT = 1.0 / genre
-                  for (keyword <- 1 to 3) {
-                     KEYWORD_WEIGHT = 1.0 / keyword
-                     for (prod <- 1 to 3) {
-                        PRODUCTION_COMP_WEIGHT = 1.0 / prod
+      val weightExtraLogger = new FileWriter(new File("weightsEx.txt"), true)
+      val weightLogger = new FileWriter(new File("weights.txt"))
+      // want to test with 0.5, 1, 2
+      val weights = List(0.5, 2, 1)
+      for (weight <- weights) {
+         CAST_WEIGHT = weight
+         for (weight <- weights) {
+            CREW_WEIGHT = weight
+            for (weight <- weights) {
+               BUDGET_WEIGHT = weight
+               for (weight <- weights) {
+                  GENRE_WEIGHT = weight
+                  for (weight <- weights) {
+                     KEYWORD_WEIGHT = weight
+                     for (weight <- weights) {
+                        PRODUCTION_COMP_WEIGHT = weight
                         // do it all
                         println("--------------------------------")
                         printWeights()
@@ -112,20 +114,27 @@ object App {
                            //            println(f"Movie: $movie%-60s, Real: $real, Pred: $pred%2.2f, SE: $diff%2.2f")
                            //            println(movies)})        // to print out all movie results from testing sample
                            val differences = result.map({ case (movie, real, movies, pred, diff) => diff })
-                           val avgDiff = differences.sum / differences.length
-                           val medianDiff = differences.sorted.drop(differences.length / 2).head
-                           averagesForTrials = averagesForTrials:::List(avgDiff)
-                           mediansForTrials = mediansForTrials:::List(medianDiff)
-
                            println(f"trial $i results:")
+                           val avgDiff = differences.sum / differences.length
+                           averagesForTrials = averagesForTrials:::List(avgDiff)
                            println(f"\t average score difference: $avgDiff")
-                           println(f"\t median score difference: $medianDiff")
+                           scala.util.control.Exception.ignoring(classOf[Exception]) {
+                              val medianDiff = differences.sorted.drop(differences.length / 2).head
+                              mediansForTrials = mediansForTrials:::List(medianDiff)
+                              println(f"\t median score difference: $medianDiff")
+                           }
                         }
+
                         val avgMean = averagesForTrials.sum / averagesForTrials.length
                         val avgMedian = mediansForTrials.sum / mediansForTrials.length
                         weightLogger.write(CAST_WEIGHT + "," + CREW_WEIGHT + "," + BUDGET_WEIGHT + "," +
                           GENRE_WEIGHT + "," + KEYWORD_WEIGHT + "," + PRODUCTION_COMP_WEIGHT + "," +
-                          avgMean + "," + avgMedian)
+                          avgMean + "," + avgMedian + "\n")
+                        weightLogger.flush()
+                        weightExtraLogger.write(CAST_WEIGHT + "," + CREW_WEIGHT + "," + BUDGET_WEIGHT + "," +
+                          GENRE_WEIGHT + "," + KEYWORD_WEIGHT + "," + PRODUCTION_COMP_WEIGHT + "," +
+                          avgMean + "," + avgMedian + "\n")
+                        weightExtraLogger.flush()
                         println(CAST_WEIGHT + "," + CREW_WEIGHT + "," + BUDGET_WEIGHT + "," +
                           GENRE_WEIGHT + "," + KEYWORD_WEIGHT + "," + PRODUCTION_COMP_WEIGHT + "," +
                           avgMean + "," + avgMedian)
