@@ -36,6 +36,23 @@ object App {
              parseList(productC), popularity.toDouble, voteAverage.toDouble*10)}).persist()
       println("Done Parsing")
 
+      
+      /* this is computing test results on 10 different 80/20 splits. 
+            ToDo: Need to incorporate MSE and SE results
+      for(i <- 1 to 10){
+         var train = dataset.sample(withReplacement = false, .2)
+         var trainList =  dataset.sample(withReplacement = false, .2).collect()
+         var test = dataset.filter(movie => !trainList.contains(movie)).collect()
+         val result = test.filter(x => x.voteAverage != 0).map(inputmovie => (inputmovie.title, inputmovie.voteAverage, KNN(inputmovie, train, n)))
+           .map({case (movieTitle, real, (pred, movies)) => (movieTitle, math.abs(real-pred), movies)})
+         println("Model " + i + " results")
+         val sum = result.map({case (movieTitle, diff, movies) => (diff)}).sum
+         val count = result.map({case (movieTitle, diff, movies) => 1}).sum
+         println("Difference from expected on average is : " + (sum/count))
+      }
+      */
+      
+      
       println("Running Trials Now")
       for (i <- 1 to 4) {
          println(f"Running trial $i...")
