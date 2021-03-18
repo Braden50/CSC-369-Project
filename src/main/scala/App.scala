@@ -239,7 +239,7 @@ object App {
      difference is 1 - similarity.
     */
    def getKeywordDifferenceCosine(movieA: Movie, movieB : Movie) : Double = {
-      val movieAkeys = movieB.keyWords.map(keyA => (keyA, 1)).groupBy(x => x._1).mapValues(x => x.map(x => x._2)).mapValues(x => x.sum)
+      val movieAkeys = movieA.keyWords.map(keyA => (keyA, 1)).groupBy(x => x._1).mapValues(x => x.map(x => x._2)).mapValues(x => x.sum)
       val movieBkeys = movieB.keyWords.map(keyB => (keyB, 1)).groupBy(x => x._1).mapValues(x => x.map(x => x._2)).mapValues(x => x.sum)
       val intersection = movieA.keyWords.filter(keyA => movieB.keyWords.contains(keyA))
       var numerator = intersection.map(str => (movieAkeys(str) * movieBkeys(str))).sum
